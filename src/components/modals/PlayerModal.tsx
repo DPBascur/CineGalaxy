@@ -76,7 +76,7 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
   if (!movie) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-12">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 md:p-12">
       {/* Backdrop */}
       <div 
         className={clsx(
@@ -89,7 +89,7 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
       {/* Modal Container */}
       <div 
         className={clsx(
-          "relative w-full max-w-5xl bg-surface rounded-xl overflow-hidden shadow-[0_0_50px_rgba(139,92,246,0.2)] border border-primary/20 transition-all duration-500 ease-out",
+          "relative w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] bg-surface rounded-t-xl sm:rounded-xl overflow-y-auto overflow-x-hidden shadow-[0_0_50px_rgba(139,92,246,0.2)] border border-primary/20 transition-all duration-500 ease-out",
           isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-8"
         )}
       >
@@ -109,13 +109,13 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
         />
 
         {/* Info Area */}
-        <div className="p-8 grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
+        <div className="p-4 sm:p-6 md:p-8 grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 md:gap-8">
           <div>
-            <h2 className="text-3xl font-extrabold mb-2 text-foreground">{movie.title}</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold mb-2 text-foreground">{movie.title}</h2>
             
             {/* Controles de Selección para Series */}
             {movie.media_type === 'tv' && seasons.length > 0 && (
-              <div className="flex gap-4 mb-4 mt-4 bg-surface p-4 rounded-lg border border-primary/20">
+              <div className="flex flex-wrap gap-3 sm:gap-4 mb-4 mt-4 bg-surface p-3 sm:p-4 rounded-lg border border-primary/20">
                 <div className="flex flex-col">
                   <label className="text-xs text-muted mb-1 font-bold">Temporada</label>
                   <select 
@@ -153,7 +153,7 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
               <span className="text-muted">{movie.year}</span>
               <span className="px-2 py-0.5 border border-muted rounded text-muted uppercase text-xs">hd</span>
             </div>
-            <p className="text-lg text-foreground mb-4 leading-relaxed font-light">
+            <p className="text-sm sm:text-base md:text-lg text-foreground mb-4 leading-relaxed font-light">
               {movie.description}
             </p>
             
@@ -174,16 +174,16 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
           </div>
           
           <div className="text-sm">
-            <div className="mb-2">
-              <span className="text-muted">Elenco: </span>
-              <span className="hover:underline cursor-pointer">Ciber Actor</span>, <span className="hover:underline cursor-pointer">Neon Persona</span>...
+            <div className="mb-3">
+              <span className="text-muted font-semibold">Elenco: </span>
+              <span className="text-foreground/80">{cast.length > 0 ? cast.map(c => c.name).join(', ') : 'No disponible'}</span>
             </div>
-            <div className="mb-2">
-              <span className="text-muted">Géneros: </span>
-              <span className="text-foreground hover:underline cursor-pointer">{movie.genre}</span>, <span className="text-foreground hover:underline cursor-pointer">Atmosférico</span>
+            <div className="mb-3">
+              <span className="text-muted font-semibold">Géneros: </span>
+              <span className="text-foreground">{movie.genre}</span>
             </div>
             <div>
-              <span className="text-muted">Rating: </span>
+              <span className="text-muted font-semibold">Rating: </span>
               <span className="text-accent font-bold">{movie.rating}/10</span>
             </div>
           </div>

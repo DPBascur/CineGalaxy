@@ -57,11 +57,11 @@ export default function MovieRow({ title, movies, onMovieSelect, onRemoveItem, d
       <button 
         onClick={() => handleScroll("left")}
         className={clsx(
-          "absolute left-4 top-1/2 -translate-y-1/2 z-30 ml-4 p-2 glass rounded-full hover-neon transition-all duration-300",
+          "absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-30 p-1.5 md:p-2 glass rounded-full hover-neon transition-all duration-300 hidden md:flex",
           !isHovered ? "opacity-0 pointer-events-none" : "opacity-100"
         )}
       >
-        <ChevronLeft className="w-6 h-6 text-foreground" />
+        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-foreground" />
       </button>
 
       <motion.div 
@@ -70,14 +70,14 @@ export default function MovieRow({ title, movies, onMovieSelect, onRemoveItem, d
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        className="flex gap-4 overflow-x-hidden scrollbar-hide py-4 px-2"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide py-4 px-2"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
       >
         {movies.map((movie) => (
           <motion.div 
             key={movie.id}
             variants={itemVariants}
-            className="relative flex-none w-[200px] h-[300px] md:w-[250px] md:h-[375px] rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-110 hover:z-30 cursor-pointer shadow-lg hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] group/card"
+            className="relative flex-none w-[140px] h-[210px] sm:w-[170px] sm:h-[255px] md:w-[200px] md:h-[300px] lg:w-[250px] lg:h-[375px] rounded-lg overflow-hidden transition-all duration-300 transform md:hover:scale-110 md:hover:z-30 cursor-pointer shadow-lg md:hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] group/card"
             onClick={() => onMovieSelect(movie)}
           >
             <img 
@@ -126,11 +126,11 @@ export default function MovieRow({ title, movies, onMovieSelect, onRemoveItem, d
       <button 
         onClick={() => handleScroll("right")}
         className={clsx(
-          "absolute right-4 top-1/2 -translate-y-1/2 z-30 mr-4 p-2 glass rounded-full hover-neon transition-all duration-300",
+          "absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-30 p-1.5 md:p-2 glass rounded-full hover-neon transition-all duration-300 hidden md:flex",
           !isHovered ? "opacity-0 pointer-events-none" : "opacity-100"
         )}
       >
-        <ChevronRight className="w-6 h-6 text-foreground" />
+        <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-foreground" />
       </button>
     </motion.div>
   );

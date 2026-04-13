@@ -16,6 +16,7 @@ export default function Navbar() {
   const [inputValue, setInputValue] = useState("");
   const [authOpen, setAuthOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
   
   const router = useRouter();
@@ -54,6 +55,16 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Bloquear scroll del body cuando el menú móvil está abierto
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
 
   const navLinks = [
     { name: "Inicio", path: "/" },
@@ -130,7 +141,7 @@ export default function Navbar() {
         <div className="relative flex items-center justify-end">
           <div
             className={clsx(
-              "flex items-center overflow-hidden transition-all duration-300 ease-in-out glass-panel rounded-full relative mr-2",
+              "flex items-center overflow-hidden transition-all duration-300 ease-in-out glass-panel rounded-full relative mr-2 hidden sm:flex",
               searchOpen ? "w-48 sm:w-56 px-4 pr-10 opacity-100" : "w-0 opacity-0 pointer-events-none border-transparent"
             )}
           >
@@ -168,7 +179,7 @@ export default function Navbar() {
         </div>
         
         {session ? (
-          <div className="flex items-center gap-4 relative group">
+          <div className="hidden md:flex items-center gap-4 relative group">
             <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/20 cursor-pointer shadow-sm bg-surface/80 flex items-center justify-center backdrop-blur-xl group-hover:border-primary transition-all duration-300">
               <UserIcon className="w-full h-full p-2 text-white/90 group-hover:text-primary transition-colors" />
             </div>
@@ -215,15 +226,117 @@ export default function Navbar() {
         ) : (
           <button 
             onClick={() => setAuthOpen(true)}
-            className="text-sm px-4 py-1.5 bg-primary/20 hover:bg-primary text-primary hover:text-white border border-primary/50 rounded-full transition-all duration-300 font-semibold shadow-[0_0_10px_rgba(139,92,246,0.2)]"
+            className="hidden md:block text-sm px-4 py-1.5 bg-primary/20 hover:bg-primary text-primary hover:text-white border border-primary/50 rounded-full transition-all duration-300 font-semibold shadow-[0_0_10px_rgba(139,92,246,0.2)]"
           >
             Iniciar Sesión
           </button>
         )}
         
-        <button className="md:hidden text-foreground ml-2">
-          <Menu className="w-6 h-6" />
+        <button 
+          className="md:hidden text-foreground ml-2" 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
+      </div>
+
+      {/* Mobile Drawer Menu */}
+      <div
+        className={clsx(
+          "fixed inset-0 top-[60px] z-40 md:hidden transition-all duration-300",
+          mobileMenuOpen ? "visible" : "invisible pointer-events-none"
+        )}
+      >
+        {/* Backdrop */}
+        <div 
+          className={clsx("absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity", mobileMenuOpen ? "opacity-100" : "opacity-0")}
+          onClick={() => setMobileMenuOpen(false)} 
+        />
+
+        {/* Panel */}
+        <div className={clsx(
+          "absolute right-0 top-0 h-full w-72 bg-background/95 backdrop-blur-2xl border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col py-6 px-5 gap-2 overflow-y-auto",
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        )}>
+          {/* Mobile Nav Links */}
+          <p className="text-xs uppercase text-muted/60 font-bold tracking-widest mb-2 px-2">Navegar</p>
+          {navLinks.map((link) => {
+            const isActive = (currentTab === "Inicio" && link.name === "Inicio") || 
+                             (currentTab === "Populares" && link.name === "Novedades") ||
+                             (currentTab === link.name);
+            return (
+              <Link 
+                key={link.name} 
+                href={link.path} 
+                onClick={() => setMobileMenuOpen(false)}
+                className={clsx(
+                  "px-4 py-3 rounded-xl font-semibold text-sm transition-all",
+                  isActive 
+                    ? "bg-primary text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]" 
+                    : "text-muted hover:text-white hover:bg-white/5"
+                )}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
+
+          <div className="h-px bg-white/10 my-3" />
+
+          {/* Mobile Search */}
+          <div className="relative">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && inputValue.trim()) {
+                  router.push(`/?query=${encodeURIComponent(inputValue.trim())}`);
+                  setMobileMenuOpen(false);
+                }
+              }}
+              placeholder="Buscar películas..."
+              className="w-full bg-white/5 border border-white/10 focus:border-primary rounded-xl px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted/50 transition-all"
+            />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          </div>
+
+          <div className="h-px bg-white/10 my-3" />
+
+          {/* Mobile User Options */}
+          {session && (
+            <>
+              <p className="text-xs uppercase text-muted/60 font-bold tracking-widest mb-2 px-2">Cuenta</p>
+              <p className="text-xs text-muted px-2 mb-1 truncate">{session.user.email}</p>
+              
+              {(session.user.email === "danielpa423@gmail.com" || session.user.user_metadata?.role === "admin") && (
+                <button 
+                  onClick={() => { router.push('/admin'); setMobileMenuOpen(false); }}
+                  className="px-4 py-3 text-sm text-left hover:bg-white/5 flex items-center gap-3 text-white rounded-xl transition-colors"
+                >
+                  <Settings size={16} className="text-accent" />
+                  Panel Admin
+                </button>
+              )}
+
+              <button 
+                onClick={() => { setPasswordOpen(true); setMobileMenuOpen(false); }}
+                className="px-4 py-3 text-sm text-left hover:bg-white/5 flex items-center gap-3 text-white rounded-xl transition-colors"
+              >
+                <Key size={16} className="text-primary" />
+                Cambiar Contraseña
+              </button>
+
+              <button 
+                onClick={() => { supabase.auth.signOut(); setMobileMenuOpen(false); }}
+                className="px-4 py-3 text-sm text-left hover:bg-red-500/10 flex items-center gap-3 text-red-400 rounded-xl transition-colors mt-2"
+              >
+                <LogOut size={16} />
+                Cerrar sesión
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}

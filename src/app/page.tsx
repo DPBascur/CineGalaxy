@@ -156,7 +156,7 @@ function MainContent() {
 
       {heroMovie && <HeroBanner movie={heroMovie} onPlay={handlePlayMovie} />}
 
-      <div className="relative z-10 -mt-24 bg-gradient-to-t from-background via-background to-transparent pb-20 min-h-screen overflow-hidden">
+      <div className="relative z-10 -mt-8 sm:-mt-16 md:-mt-24 bg-gradient-to-t from-background via-background to-transparent pb-20 min-h-screen overflow-hidden">
         <SpaceParticles id="home-stars" />
         
         {query ? (
