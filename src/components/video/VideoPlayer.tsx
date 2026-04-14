@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
 interface VideoPlayerProps {
@@ -8,17 +8,34 @@ interface VideoPlayerProps {
   mediaType?: 'movie' | 'tv';
   season?: number;
   episode?: number;
+  onPlayStart?: () => void;
 }
 
-export default function VideoPlayer({ movieId, mediaType = 'movie', season = 1, episode = 1 }: VideoPlayerProps) {
+export default function VideoPlayer({ movieId, mediaType = 'movie', season = 1, episode = 1, onPlayStart }: VideoPlayerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Forzar reload cuando cambian season o episode
   useEffect(() => {
     setIsLoading(true);
     setHasError(false);
   }, [movieId, season, episode]);
+
+  // Detector mágico de Play en Iframe
+  useEffect(() => {
+    let fired = false;
+    const handleBlur = () => {
+      setTimeout(() => {
+        if (!fired && document.activeElement === iframeRef.current) {
+          fired = true;
+          if (onPlayStart) onPlayStart();
+        }
+      }, 50);
+    };
+    window.addEventListener('blur', handleBlur);
+    return () => window.removeEventListener('blur', handleBlur);
+  }, [onPlayStart, movieId, season, episode]);
 
   // Determinar URL del iframe según tipo
   const baseUrl = mediaType === 'tv' 
@@ -45,6 +62,7 @@ export default function VideoPlayer({ movieId, mediaType = 'movie', season = 1, 
 
       {/* 3. Endpoint exclusivo de Embed de Videasy */}
       <iframe
+        ref={iframeRef}
         src={srcUrl}
         className="w-full h-full border-0 focus:outline-none"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

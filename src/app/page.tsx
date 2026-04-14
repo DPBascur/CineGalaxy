@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import HeroBanner from "@/components/home/HeroBanner";
@@ -19,8 +19,10 @@ import clsx from "clsx";
 
 function MainContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const query = searchParams.get("query");
   const tabParam = searchParams.get("tab");
+  const randomParam = searchParams.get("random");
 
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [activeTab, setActiveTab] = useState("Populares");
@@ -47,43 +49,61 @@ function MainContent() {
   const [continueWatching, setContinueWatching] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Leer estado de localstorage en el mount
+  // Leer estado de localstorage y supabase en el mount
   useEffect(() => {
-    const stored = localStorage.getItem("cinegalaxy_continue");
-    if (stored) {
-      try {
-        setContinueWatching(JSON.parse(stored));
-      } catch (e) {}
-    }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.user_metadata?.cinegalaxy_continue) {
+        setContinueWatching(session.user.user_metadata.cinegalaxy_continue);
+        localStorage.setItem("cinegalaxy_continue", JSON.stringify(session.user.user_metadata.cinegalaxy_continue));
+      } else {
+        const stored = localStorage.getItem("cinegalaxy_continue");
+        if (stored) {
+          try {
+            setContinueWatching(JSON.parse(stored));
+          } catch (e) {}
+        }
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user?.user_metadata?.cinegalaxy_continue) {
+        setContinueWatching(session.user.user_metadata.cinegalaxy_continue);
+        localStorage.setItem("cinegalaxy_continue", JSON.stringify(session.user.user_metadata.cinegalaxy_continue));
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Setear la pelicula global y guardarla en Seguir Viendo
   const handlePlayMovie = (movie: Movie) => {
     setSelectedMovie(movie);
-    
-    setContinueWatching(prev => {
-      // Remover si ya existe para ponerla primero
-      const filtered = prev.filter(m => m.id !== movie.id);
-      const updated = [movie, ...filtered].slice(0, 10); // Max 10 items
-      localStorage.setItem("cinegalaxy_continue", JSON.stringify(updated));
-      return updated;
-    });
   };
 
-  // Callback por si la borra el usuario
+  // Callback por si la borra el usuario u ocurren cambios en el modal
   const refreshContinueWatching = () => {
-    const stored = localStorage.getItem("cinegalaxy_continue");
-    if (stored) {
-      setContinueWatching(JSON.parse(stored));
-    } else {
-      setContinueWatching([]);
-    }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.user_metadata?.cinegalaxy_continue) {
+        setContinueWatching(session.user.user_metadata.cinegalaxy_continue);
+      } else {
+        const stored = localStorage.getItem("cinegalaxy_continue");
+        if (stored) {
+          setContinueWatching(JSON.parse(stored));
+        } else {
+          setContinueWatching([]);
+        }
+      }
+    });
   };
 
   const handleRemoveFromRow = (movie: Movie) => {
     setContinueWatching(prev => {
       const updated = prev.filter(m => m.id !== movie.id);
       localStorage.setItem("cinegalaxy_continue", JSON.stringify(updated));
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          supabase.auth.updateUser({ data: { cinegalaxy_continue: updated } });
+        }
+      });
       return updated;
     });
   };
@@ -106,12 +126,24 @@ function MainContent() {
         setPopular(popData);
         setSeries(tvData);
         setAnime(animeData);
-        setHeroMovie(trendData[0] || mockMovies[0]);
+
+        if (randomParam === '1') {
+          const allMovies = [...trendData, ...popData, ...tvData, ...animeData];
+          if (allMovies.length > 0) {
+            const randomMovie = allMovies[Math.floor(Math.random() * allMovies.length)];
+            setSelectedMovie(randomMovie);
+            setHeroMovie(randomMovie);
+          }
+          // Remove parameter without reloading
+          router.replace('/');
+        } else {
+          setHeroMovie(trendData[0] || mockMovies[0]);
+        }
       }
       setIsLoading(false);
     }
     loadData();
-  }, [query]);
+  }, [query, randomParam, router]);
 
   // Carousel Automático para el Home
   useEffect(() => {
@@ -216,7 +248,7 @@ function MainContent() {
                     {continueWatching.length > 0 && (
                       <MovieRow title="Seguir Viendo" movies={continueWatching} onMovieSelect={handlePlayMovie} onRemoveItem={handleRemoveFromRow} delay={0.0} />
                     )}
-                    <MovieRow title="Tendencias Globales" movies={trending} onMovieSelect={handlePlayMovie} delay={0.1} />
+                    <MovieRow title="Tendencias Globales" movies={trending.slice(0, 10)} onMovieSelect={handlePlayMovie} delay={0.1} isTop10={true} />
                     <MovieRow title="Series Destacadas" movies={series} onMovieSelect={handlePlayMovie} delay={0.2} />
                     <MovieRow title="Lo Más Visto en Cine" movies={popular} onMovieSelect={handlePlayMovie} delay={0.3} />
                     <MovieRow title="Nuevos Episodios Anime" movies={anime} onMovieSelect={handlePlayMovie} delay={0.4} />
@@ -258,11 +290,38 @@ export default function Home() {
   const [introFinished, setIntroFinished] = useState(true);
 
   useEffect(() => {
+    let deviceId = localStorage.getItem('cinegalaxy_device_id');
+    if (!deviceId) {
+      deviceId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem('cinegalaxy_device_id', deviceId);
+    }
+
+    let channel: any = null;
+
+    const setupRealtime = (user: any) => {
+      if (!user) return;
+      channel = supabase.channel(`device_sync_${user.id}`);
+      
+      channel
+        .on('broadcast', { event: 'new_login' }, (payload: any) => {
+          if (payload.payload?.deviceId && payload.payload.deviceId !== deviceId) {
+            alert("Tu cuenta ha sido abierta en otro dispositivo. Cerrando sesión aquí por seguridad.");
+            supabase.auth.signOut();
+          }
+        })
+        .subscribe((status: string) => {
+          if (status === 'SUBSCRIBED') {
+            channel.send({ type: 'broadcast', event: 'new_login', payload: { deviceId } });
+          }
+        });
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session && !sessionStorage.getItem('cinegalaxy_intro_played')) {
         setIntroFinished(false);
       }
+      if (session?.user) setupRealtime(session.user);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -270,9 +329,20 @@ export default function Home() {
       if (session && !sessionStorage.getItem('cinegalaxy_intro_played')) {
         setIntroFinished(false);
       }
+      if (session?.user) {
+        if (!channel) setupRealtime(session.user);
+      } else {
+        if (channel) {
+          channel.unsubscribe();
+          channel = null;
+        }
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      if (channel) channel.unsubscribe();
+    };
   }, []);
 
   const handleIntroComplete = () => {

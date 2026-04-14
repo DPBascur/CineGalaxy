@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, Menu, User as UserIcon, LogOut, Settings, Key, X } from "lucide-react";
+import { Search, Menu, User as UserIcon, LogOut, Settings, Key, X, Rocket } from "lucide-react";
 import AuthModal from "@/components/auth/AuthModal";
 import PasswordModal from "@/components/auth/PasswordModal";
 import { supabase } from "@/lib/supabase";
@@ -172,9 +172,17 @@ export default function Navbar() {
                 setSearchOpen(false);
               }
             }}
-            className="text-foreground hover:text-primary transition-colors hover:shadow-[0_0_10px_rgba(139,92,246,0.5)] p-2 rounded-full"
+            className="text-foreground hover:text-primary transition-colors hover:shadow-[0_0_10px_rgba(139,92,246,0.5)] p-2 rounded-full mr-2"
           >
             <Search className="w-5 h-5" />
+          </button>
+          
+          <button
+            onClick={() => router.push('/?random=1')}
+            className="text-foreground hover:text-accent transition-all duration-300 hover:scale-110 p-2 rounded-full border border-transparent hover:border-accent shadow-[0_0_15px_rgba(244,114,182,0)] hover:shadow-[0_0_15px_rgba(244,114,182,0.5)] bg-surface/50 sm:bg-transparent"
+            title="Viaje Aleatorio"
+          >
+            <Rocket className="w-5 h-5" />
           </button>
         </div>
         

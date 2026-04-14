@@ -14,8 +14,9 @@ export default function Footer() {
         <div className="absolute top-[-50%] right-[10%] w-64 h-64 bg-accent/10 rounded-full blur-[100px] pointer-events-none"></div>
       </div>
       
-      <div className="max-w-4xl mx-auto flex flex-col gap-4 relative z-10 pointer-events-auto">
-        <p className="text-muted text-sm lg:text-base font-medium">
+      <div className="max-w-4xl mx-auto flex flex-col gap-4 relative z-10 pointer-events-auto items-center">
+        <img src="/cinegalaxy_logo.png" alt="CineGalaxy Logo" className="h-12 w-auto opacity-80 mt-2 mb-2" />
+        <p className="text-muted text-sm lg:text-base font-medium text-center">
           Creado por <span className="font-bold text-accent neon-text">s4ik0</span> y <span className="font-bold text-accent neon-text">cammmil0</span>. Todos los derechos reservados &copy; {new Date().getFullYear()}.
         </p>
         <div className="p-5 bg-surface/60 backdrop-blur-md rounded-xl border border-white/5 shadow-[0_0_20px_rgba(0,0,0,0.5)]">

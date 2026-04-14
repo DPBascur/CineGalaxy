@@ -46,7 +46,8 @@ function mapTMDBToMovie(raw: any, defaultType: 'movie' | 'tv' = 'movie'): Movie 
     rating: raw.vote_average ? Number(raw.vote_average.toFixed(1)) : 0,
     year: raw.release_date ? parseInt(raw.release_date.split("-")[0]) : (raw.first_air_date ? parseInt(raw.first_air_date.split("-")[0]) : 2024),
     match: raw.vote_average ? Math.floor(raw.vote_average * 10) : 85,
-    media_type: raw.media_type || defaultType
+    media_type: raw.media_type || defaultType,
+    adult: raw.adult || false
   };
 }
 

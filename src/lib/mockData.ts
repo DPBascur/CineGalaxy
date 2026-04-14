@@ -9,6 +9,7 @@ export interface Movie {
   year: number;
   match?: number;
   media_type?: 'movie' | 'tv';
+  adult?: boolean;
 }
 
 export const mockMovies: Movie[] = [

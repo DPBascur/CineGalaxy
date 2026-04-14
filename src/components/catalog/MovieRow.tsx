@@ -12,6 +12,7 @@ interface MovieRowProps {
   onMovieSelect: (movie: Movie) => void;
   onRemoveItem?: (movie: Movie) => void;
   delay?: number;
+  isTop10?: boolean;
 }
 
 const containerVariants = {
@@ -29,7 +30,7 @@ const itemVariants = {
   visible: { opacity: 1, x: 0 }
 };
 
-export default function MovieRow({ title, movies, onMovieSelect, onRemoveItem, delay = 0 }: MovieRowProps) {
+export default function MovieRow({ title, movies, onMovieSelect, onRemoveItem, delay = 0, isTop10 = false }: MovieRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -70,16 +71,38 @@ export default function MovieRow({ title, movies, onMovieSelect, onRemoveItem, d
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide py-4 px-2"
+        className={clsx("flex gap-3 md:gap-4 overflow-x-auto overflow-y-hidden scrollbar-hide px-4", isTop10 ? "py-8" : "py-4")}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
       >
-        {movies.map((movie) => (
+        {movies.map((movie, index) => (
           <motion.div 
             key={movie.id}
             variants={itemVariants}
-            className="relative flex-none w-[140px] h-[210px] sm:w-[170px] sm:h-[255px] md:w-[200px] md:h-[300px] lg:w-[250px] lg:h-[375px] rounded-lg overflow-hidden transition-all duration-300 transform md:hover:scale-110 md:hover:z-30 cursor-pointer shadow-lg md:hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] group/card"
+            className={clsx(
+              "relative flex-none transition-all duration-300 transform md:hover:scale-110 md:hover:z-30 cursor-pointer flex justify-end group/card",
+              isTop10 
+                ? "w-[180px] h-[210px] sm:w-[220px] sm:h-[255px] md:w-[260px] md:h-[300px] lg:w-[320px] lg:h-[375px]" 
+                : "w-[140px] h-[210px] sm:w-[170px] sm:h-[255px] md:w-[200px] md:h-[300px] lg:w-[250px] lg:h-[375px] rounded-lg shadow-lg md:hover:shadow-[0_0_25px_rgba(139,92,246,0.5)]"
+            )}
             onClick={() => onMovieSelect(movie)}
           >
+            {isTop10 && (
+              <span 
+                className="absolute left-0 bottom-0 translate-y-[10%] text-[130px] sm:text-[160px] md:text-[200px] lg:text-[250px] font-black leading-[0.7] tracking-tighter pointer-events-none select-none z-10"
+                style={{ 
+                  WebkitTextStroke: "3px #666", 
+                  WebkitTextFillColor: "#141414",
+                  color: "#141414",
+                  textShadow: "0px 0px 10px rgba(0,0,0,0.8)"
+                }}
+              >
+                {index + 1}
+              </span>
+            )}
+            <div className={clsx(
+              "relative h-full overflow-hidden rounded-lg transition-shadow duration-300",
+              isTop10 ? "w-[75%] sm:w-[70%] shadow-2xl md:group-hover/card:shadow-[0_0_25px_rgba(139,92,246,0.5)] z-20" : "w-full"
+            )}>
             <img 
               src={movie.poster_url} 
               alt={movie.title} 
@@ -118,6 +141,7 @@ export default function MovieRow({ title, movies, onMovieSelect, onRemoveItem, d
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
               )}
+            </div>
             </div>
           </motion.div>
         ))}

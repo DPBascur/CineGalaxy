@@ -14,8 +14,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CineGalaxy - Neon Streaming",
-  description: "La mejor plataforma de streaming con estilo cyberpunk y liquid glassmorphism.",
+  title: "CineGalaxy - Galaxy Streaming",
+  description: "Viaja al espacio con nosotros, y mira lo que quieras",
+  openGraph: {
+    title: "CineGalaxy - Galaxy Streaming",
+    description: "Viaja al espacio con nosotros, y mira lo que quieras",
+    images: [
+      {
+        url: "/cinegalaxy_logo.png",
+        width: 800,
+        height: 600,
+        alt: "CineGalaxy Logo",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -29,6 +41,36 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              document.addEventListener('contextmenu', event => event.preventDefault());
+              document.onkeydown = function(e) {
+                const isDevTools = (
+                  e.keyCode === 123 || 
+                  (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) || 
+                  (e.ctrlKey && e.keyCode === 85)
+                );
+                if (isDevTools) {
+                  e.preventDefault();
+                  window.location.href = "https://m.youtube.com/watch?v=jy4qYmf3TxA";
+                  return false;
+                }
+              };
+              let devtoolsOpen = false;
+              setInterval(function() {
+                const widthThreshold = window.outerWidth - window.innerWidth > 160;
+                const heightThreshold = window.outerHeight - window.innerHeight > 160;
+                if(widthThreshold || heightThreshold) {
+                  if(!devtoolsOpen) {
+                    devtoolsOpen = true;
+                    window.location.href = "https://m.youtube.com/watch?v=jy4qYmf3TxA";
+                  }
+                }
+              }, 500);
+            `
+          }}
+        />
         {children}
         <Analytics />
       </body>
