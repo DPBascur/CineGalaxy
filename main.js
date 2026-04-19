@@ -27,7 +27,7 @@ function createWindow() {
   // Impedir que la ventana principal sea redirigida hacia sitios de anuncios por los Iframes
   mainWindow.webContents.on('will-navigate', (e, url) => {
     // Si la URL no es Vercel o Localhost, bloqueamos la navegación o la lanzamos al navegador
-    if (!url.includes('localhost') && !url.includes('cinegalaxy.vercel.app')) {
+    if (!url.includes('localhost') && !url.includes('cine-galaxy.vercel.app')) {
       e.preventDefault();
     }
   });
@@ -35,7 +35,7 @@ function createWindow() {
   // MUY IMPORTANTE: ¡Cambia esta URL por la tuya real que te asigne Vercel!
   const startUrl = process.env.NODE_ENV === 'development' 
     ? 'http://localhost:3000' 
-    : 'https://cinegalaxy.vercel.app'; // <--- CAMBIA ESTO por tu dominio real
+    : 'https://cine-galaxy.vercel.app'; // <--- CAMBIA ESTO por tu dominio real
     
   mainWindow.loadURL(startUrl);
 

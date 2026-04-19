@@ -8,7 +8,7 @@ import { ArrowLeft, ShieldAlert, Trash2, Edit2, UserPlus } from 'lucide-react-na
 const ADMIN_EMAIL = process.env.EXPO_PUBLIC_ADMIN_EMAIL || "";
 const API_URL = __DEV__ 
   ? (process.env.EXPO_PUBLIC_API_URL || "http://10.0.2.2:3000/api") 
-  : (process.env.EXPO_PUBLIC_PROD_API_URL || "https://cinegalaxy.vercel.app/api");
+  : (process.env.EXPO_PUBLIC_PROD_API_URL || "https://cine-galaxy.vercel.app/api");
 
 export default function AdminScreen() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
