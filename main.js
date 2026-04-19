@@ -8,7 +8,7 @@ function createWindow() {
     width: 1280,
     height: 720,
     title: 'CineGalaxy',
-    // icon: path.join(__dirname, 'public/cinegalaxy_logo.png'), 
+    icon: path.join(__dirname, 'build', 'icon.ico'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

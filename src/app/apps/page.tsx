@@ -70,7 +70,7 @@ export default function AppsLandingPage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                 </span>
-                Versión 1.0.0 Oficial Disponible
+                Versión 1.0.1 Oficial Disponible
               </motion.div>
               
               <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-primary/40 leading-[1.1]">
@@ -84,7 +84,7 @@ export default function AppsLandingPage() {
               {/* Download Buttons */}
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 mt-4">
                 <a 
-                  href="https://github.com/DPBascur/CineGalaxy/releases/download/v1.0.0/CineGalaxy_Setup_1.0.0.exe"
+                  href="https://github.com/DPBascur/CineGalaxy/releases/download/v1.0.1/CineGalaxy.Setup.1.0.1.exe"
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Descargar CineGalaxy para Windows"

@@ -1,6 +1,6 @@
 {
-  "name": "temp_app",
-  "version": "0.1.0",
+  "name": "cinegalaxy",
+  "version": "1.0.1",
   "description": "CineGalaxy Streaming App",
   "author": "Daniel",
   "private": true,
@@ -42,5 +42,29 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "wait-on": "^9.0.5"
+  },
+  "build": {
+    "appId": "com.cinegalaxy.app",
+    "productName": "CineGalaxy",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "shortcutName": "CineGalaxy"
+    }
   }
 }
