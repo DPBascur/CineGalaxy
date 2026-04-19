@@ -101,7 +101,7 @@ export default function AppsLandingPage() {
                 </a>
 
                 <a 
-                  href="https://github.com/DPBascur/CineGalaxy/releases/download/v1.0.0/CineGalaxy.apk"
+                  href="https://github.com/DPBascur/CineGalaxy/releases/download/v1.0.1/CineGalaxy.apk"
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Descargar CineGalaxy para Android"
