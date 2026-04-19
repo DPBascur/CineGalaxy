@@ -185,7 +185,7 @@ export default function AppsLandingPage() {
             <img src="/cinegalaxy_logo.png" alt="Logo" className="w-6 h-6 rounded grayscale" />
             <span className="text-sm font-bold text-white tracking-widest">CINEGALAXY APPS</span>
           </div>
-          <p className="text-xs text-muted font-medium">Hecho para el infinito. v1.0.0 © 2026</p>
+          <p className="text-xs text-muted font-medium">Hecho para el infinito. v1.0.1 © 2026</p>
         </div>
       </footer>
     </>

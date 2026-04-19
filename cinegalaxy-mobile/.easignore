@@ -1,0 +1,47 @@
+# .easignore
+# Este archivo sobrescribe el comportamiento de .gitignore durante las compilaciones en EAS Build (Vercel/Expo).
+# Comentamos .env para permitir que las variables EXPO_PUBLIC_ sean inyectadas en tu APK de la nube.
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native builds
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# env files - !Importante para EAS Build! (No deben ser ignoradas las variables con formato EXPO_PUBLIC_)
+# .env
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+# IDE
+.vscode/

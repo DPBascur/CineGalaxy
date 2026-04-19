@@ -195,5 +195,5 @@ El uso de esta aplicacion con servicios de terceros es bajo la **total y exclusi
 ---
 
 <p align="center">
-  <strong>CineGalaxy v1.0.0 - 2026</strong>
+  <strong>CineGalaxy v1.0.1 - 2026</strong>
 </p>
