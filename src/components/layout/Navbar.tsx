@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, Menu, User as UserIcon, LogOut, Settings, Key, X, Rocket } from "lucide-react";
 import AuthModal from "@/components/auth/AuthModal";
 import PasswordModal from "@/components/auth/PasswordModal";
@@ -18,9 +18,11 @@ export default function Navbar() {
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
+  const [isNativeApp, setIsNativeApp] = useState(false);
   
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const currentTab = searchParams.get("tab") || "Inicio";
 
   // Supabase Auth Listener
@@ -53,6 +55,13 @@ export default function Navbar() {
       setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener("scroll", handleScroll);
+    
+    // Detectar si estamos en CapacitorJS (Móvil/TV) o ElectronJS (Desktop)
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes('electron') || (typeof window !== 'undefined' && (window as any)?.Capacitor?.isNative)) {
+      setIsNativeApp(true);
+    }
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -71,7 +80,8 @@ export default function Navbar() {
     { name: "Series", path: "/?tab=Series" },
     { name: "Películas", path: "/?tab=Películas" },
     { name: "Novedades", path: "/?tab=Populares" },
-  ];
+    { name: "Apps", path: "/apps" }
+  ].filter(link => !(link.name === "Apps" && isNativeApp));
 
   return (
     <nav
@@ -106,9 +116,10 @@ export default function Navbar() {
       <ul className="hidden md:flex items-center justify-center absolute left-1/2 -translate-x-1/2 space-x-1 bg-surface/50 backdrop-blur-xl px-2 py-1.5 rounded-full border border-white/10 shadow-lg">
         {navLinks.map((link) => {
           // Logic for exact active matching
-          const isActive = (currentTab === "Inicio" && link.name === "Inicio") || 
-                           (currentTab === "Populares" && link.name === "Novedades") ||
-                           (currentTab === link.name);
+          const isActive = (currentTab === "Inicio" && link.name === "Inicio" && searchParams.get('tab') === null && pathname === "/") || 
+                           (currentTab === "Populares" && link.name === "Novedades" && pathname === "/") ||
+                           (currentTab === link.name && pathname === "/") ||
+                           (link.name === "Apps" && pathname === "/apps");
           return (
             <li key={link.name} className="relative">
               <Link 
@@ -117,7 +128,7 @@ export default function Navbar() {
                   "relative px-5 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 w-full flex items-center justify-center z-10",
                   isActive 
                     ? "text-white" 
-                    : "text-muted hover:text-white"
+                    : (link.name === "Apps" ? "text-[#C084FC] hover:text-white drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" : "text-muted hover:text-white")
                 )}
               >
                 {isActive && (
@@ -202,7 +213,7 @@ export default function Navbar() {
                 )}
               </div>
 
-              {(session.user.email === "danielpa423@gmail.com" || session.user.user_metadata?.role === "admin") && (
+              {(session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || session.user.user_metadata?.role === "admin") && (
                 <button 
                   onClick={() => router.push('/admin')}
                   className="px-4 py-2.5 text-sm text-left hover:bg-white/10 flex items-center gap-3 text-white transition-colors"
@@ -269,9 +280,10 @@ export default function Navbar() {
           {/* Mobile Nav Links */}
           <p className="text-xs uppercase text-muted/60 font-bold tracking-widest mb-2 px-2">Navegar</p>
           {navLinks.map((link) => {
-            const isActive = (currentTab === "Inicio" && link.name === "Inicio") || 
-                             (currentTab === "Populares" && link.name === "Novedades") ||
-                             (currentTab === link.name);
+            const isActive = (currentTab === "Inicio" && link.name === "Inicio" && searchParams.get('tab') === null && pathname === "/") || 
+                             (currentTab === "Populares" && link.name === "Novedades" && pathname === "/") ||
+                             (currentTab === link.name && pathname === "/") ||
+                             (link.name === "Apps" && pathname === "/apps");
             return (
               <Link 
                 key={link.name} 
@@ -292,7 +304,7 @@ export default function Navbar() {
           <div className="h-px bg-white/10 my-3" />
 
           {/* Mobile Search */}
-          <div className="relative">
+          <div className="relative flex items-center">
             <input
               type="text"
               value={inputValue}
@@ -304,9 +316,20 @@ export default function Navbar() {
                 }
               }}
               placeholder="Buscar películas..."
-              className="w-full bg-white/5 border border-white/10 focus:border-primary rounded-xl px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted/50 transition-all"
+              className="w-full bg-white/5 border border-white/10 focus:border-primary rounded-xl px-4 py-3 pr-10 text-sm text-foreground outline-none placeholder:text-muted/50 transition-all"
             />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+            <button 
+              onClick={() => {
+                if (inputValue.trim()) {
+                  router.push(`/?query=${encodeURIComponent(inputValue.trim())}`);
+                  setMobileMenuOpen(false);
+                }
+              }}
+              className="absolute right-3 p-1 text-muted hover:text-white transition-colors disabled:opacity-50"
+              disabled={!inputValue.trim()}
+            >
+              <Search className="w-4 h-4" />
+            </button>
           </div>
 
           <div className="h-px bg-white/10 my-3" />
@@ -317,7 +340,7 @@ export default function Navbar() {
               <p className="text-xs uppercase text-muted/60 font-bold tracking-widest mb-2 px-2">Cuenta</p>
               <p className="text-xs text-muted px-2 mb-1 truncate">{session.user.email}</p>
               
-              {(session.user.email === "danielpa423@gmail.com" || session.user.user_metadata?.role === "admin") && (
+              {(session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || session.user.user_metadata?.role === "admin") && (
                 <button 
                   onClick={() => { router.push('/admin'); setMobileMenuOpen(false); }}
                   className="px-4 py-3 text-sm text-left hover:bg-white/5 flex items-center gap-3 text-white rounded-xl transition-colors"

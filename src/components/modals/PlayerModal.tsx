@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { X, Play, Plus, ThumbsUp, Volume2, CheckCircle2, ShieldAlert, SkipForward, Star, EyeOff } from "lucide-react";
 import { Movie } from "@/lib/mockData";
 import { getTVShowDetails, getTVShowEpisodes, getMediaCredits, SeasonInfo, EpisodeInfo, CastMember } from "@/lib/tmdb";
@@ -130,6 +130,25 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
     }
   };
 
+  const handlePlayStart = useCallback(() => {
+    if (!movie) return;
+    const stored = localStorage.getItem("cinegalaxy_continue");
+    let updated: Movie[] = [];
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const filtered = parsed.filter((m: any) => m.id !== movie.id);
+      updated = [movie, ...filtered].slice(0, 10);
+    } else {
+      updated = [movie];
+    }
+    localStorage.setItem("cinegalaxy_continue", JSON.stringify(updated));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase.auth.updateUser({ data: { cinegalaxy_continue: updated } });
+      }
+    });
+  }, [movie]);
+
   if (!movie) return null;
 
   return (
@@ -143,11 +162,10 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
         onClick={onClose}
       />
 
-      {/* Modal Container */}
       <div 
         className={clsx(
           "relative w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] bg-surface rounded-t-xl sm:rounded-xl overflow-y-auto overflow-x-hidden shadow-[0_0_50px_rgba(139,92,246,0.2)] border border-primary/20 transition-all duration-500 ease-out",
-          isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-8"
+          isVisible ? "opacity-100 transform-none" : "opacity-0 scale-95 translate-y-8"
         )}
       >
         <button 
@@ -163,23 +181,7 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
           mediaType={movie.media_type} 
           season={selectedSeason} 
           episode={selectedEpisode} 
-          onPlayStart={() => {
-            const stored = localStorage.getItem("cinegalaxy_continue");
-            let updated = [];
-            if (stored) {
-              const parsed = JSON.parse(stored);
-              const filtered = parsed.filter((m: any) => m.id !== movie.id);
-              updated = [movie, ...filtered].slice(0, 10);
-            } else {
-              updated = [movie];
-            }
-            localStorage.setItem("cinegalaxy_continue", JSON.stringify(updated));
-            supabase.auth.getSession().then(({ data: { session } }) => {
-              if (session?.user) {
-                supabase.auth.updateUser({ data: { cinegalaxy_continue: updated } });
-              }
-            });
-          }}
+          onPlayStart={handlePlayStart}
         />
 
         {/* Adblock Warning Banner */}

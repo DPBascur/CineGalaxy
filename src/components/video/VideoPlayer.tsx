@@ -64,8 +64,9 @@ export default function VideoPlayer({ movieId, mediaType = 'movie', season = 1, 
       <iframe
         ref={iframeRef}
         src={srcUrl}
-        className="w-full h-full border-0 focus:outline-none"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        className="w-full h-full border-0 focus:outline-none bg-transparent"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; web-share"
+        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
         allowFullScreen
         onLoad={() => setIsLoading(false)}
         onError={() => {

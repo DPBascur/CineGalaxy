@@ -322,6 +322,9 @@ export default function Home() {
         setIntroFinished(false);
       }
       if (session?.user) setupRealtime(session.user);
+    }).catch(err => {
+      console.error("Error obteniendo sesión de Supabase:", err);
+      setSession(null);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

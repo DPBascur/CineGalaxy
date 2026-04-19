@@ -40,6 +40,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               delay: Math.random() * 2,
               ease: "linear"
             }}
+            style={{ willChange: "transform, opacity" }}
           />
         ))}
       </div>
@@ -64,7 +65,8 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           times: [0, 0.15, 0.7, 1], // Aparece rápido, se mantiene, te traga y desaparece
           ease: "easeInOut" 
         }}
-        className="relative z-10 flex flex-col items-center justify-center"
+        className="relative z-10 flex flex-col items-center justify-center transform-gpu"
+        style={{ willChange: "transform, opacity", transformOrigin: "center center" }}
       >
         <h1 
           className="font-extrabold text-7xl md:text-9xl tracking-tighter"
