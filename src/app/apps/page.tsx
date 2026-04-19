@@ -84,7 +84,7 @@ export default function AppsLandingPage() {
               {/* Download Buttons */}
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 mt-4">
                 <a 
-                  href="https://drive.google.com/uc?export=download&id=1PXkD3Xp-y2VMP5qMUGpsirWdKYtTWbAr"
+                  href="https://github.com/DPBascur/CineGalaxy/releases/download/v1.0.0/CineGalaxy_Setup_1.0.0.exe"
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Descargar CineGalaxy para Windows"
@@ -101,7 +101,7 @@ export default function AppsLandingPage() {
                 </a>
 
                 <a 
-                  href="https://drive.google.com/uc?export=download&id=1v6XQT0nH7-ZkiHKscOWwLVlCsZNu-U7h"
+                  href="https://github.com/DPBascur/CineGalaxy/releases/download/v1.0.0/CineGalaxy.apk"
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Descargar CineGalaxy para Android"
