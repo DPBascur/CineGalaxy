@@ -7,7 +7,7 @@ import { Trash2, UserPlus, ShieldAlert, Loader2, ArrowLeft, Edit2, X } from "luc
 import Navbar from "@/components/layout/Navbar";
 import { SpaceParticles } from "@/components/layout/SpaceParticles";
 
-const ADMIN_EMAIL = "danielpa423@gmail.com";
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
 
 export default function AdminPage() {
   const router = useRouter();
