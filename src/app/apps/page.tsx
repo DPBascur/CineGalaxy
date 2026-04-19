@@ -84,9 +84,10 @@ export default function AppsLandingPage() {
               {/* Download Buttons */}
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 mt-4">
                 <a 
-                  href="/CineGalaxy-Windows.exe"
-                  download
-                  title="Cambia el href al enlace de tu EXE o archivo en GitHub/Drive"
+                  href="https://drive.google.com/uc?export=download&id=1PXkD3Xp-y2VMP5qMUGpsirWdKYtTWbAr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Descargar CineGalaxy para Windows"
                   className="group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-xl bg-primary px-8 font-bold text-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(139,92,246,0.6)]"
                 >
                   <span className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] -translate-x-[150%] skew-x-[-45deg] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
@@ -100,9 +101,10 @@ export default function AppsLandingPage() {
                 </a>
 
                 <a 
-                  href="/CineGalaxy.apk"
-                  download
-                  title="Cambia el href por el enlace de tu APK (Drive, GitHub, Mediafire, etc)"
+                  href="https://drive.google.com/uc?export=download&id=1v6XQT0nH7-ZkiHKscOWwLVlCsZNu-U7h"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Descargar CineGalaxy para Android"
                   className="group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-xl bg-surface border border-white/10 px-8 font-bold text-white transition-all duration-300 hover:scale-105 hover:bg-white/5 hover:border-primary/50 hover:shadow-[0_0_30px_rgba(192,132,252,0.2)]"
                 >
                   <div className="flex items-center gap-3">
