@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { Trash2, UserPlus, ShieldAlert, Loader2, ArrowLeft, Edit2, X } from "lucide-react";
+import { Trash2, UserPlus, ShieldAlert, ArrowLeft, Edit2, X, Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import Lottie from "@/components/ui/LottieClient";
+import loadingAnimation from "../../../public/animations/Loading.json";
 import { SpaceParticles } from "@/components/layout/SpaceParticles";
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
@@ -22,6 +24,7 @@ export default function AdminPage() {
   const [newUsername, setNewUsername] = useState("");
   const [newUserRole, setNewUserRole] = useState("user");
   const [isCreating, setIsCreating] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   // Edit Modal
@@ -149,7 +152,7 @@ export default function AdminPage() {
   if (isAdmin === null) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+        <Lottie animationData={loadingAnimation} loop={true} className="w-24 h-24 mb-4" />
         <p className="text-muted">Verificando Credenciales Cósmicas...</p>
       </div>
     );
@@ -200,7 +203,16 @@ export default function AdminPage() {
               
               <div>
                 <label className="block text-xs font-semibold text-muted mb-1">Contraseña Provisoria</label>
-                <input type="password" value={newUserPassword} onChange={e => setNewUserPassword(e.target.value)} className="w-full bg-surface border border-primary/40 focus:border-primary focus:shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all rounded p-2 text-sm text-foreground outline-none" required minLength={6} />
+                <div className="relative">
+                  <input type={showPassword ? "text" : "password"} value={newUserPassword} onChange={e => setNewUserPassword(e.target.value)} className="w-full bg-surface border border-primary/40 focus:border-primary focus:shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all rounded p-2 pr-10 text-sm text-foreground outline-none" required minLength={6} />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -212,7 +224,7 @@ export default function AdminPage() {
               </div>
 
               <button type="submit" disabled={isCreating} className="w-full mt-2 py-3 bg-primary hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_30px_rgba(139,92,246,0.8)] rounded-lg text-white font-bold flex justify-center text-sm uppercase tracking-wider">
-                {isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : "Crear Cuenta"}
+                {isCreating ? <Lottie animationData={loadingAnimation} loop={true} className="w-8 h-8" /> : "Crear Cuenta"}
               </button>
             </form>
           </div>
@@ -223,7 +235,7 @@ export default function AdminPage() {
             
             {loading ? (
               <div className="flex justify-center p-8">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <Lottie animationData={loadingAnimation} loop={true} className="w-16 h-16" />
               </div>
             ) : (
               <div className="overflow-x-auto">

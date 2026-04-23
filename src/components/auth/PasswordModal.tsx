@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Loader2, X, KeySquare } from "lucide-react";
+import { X, KeySquare, Eye, EyeOff } from "lucide-react";
+import Lottie from "@/components/ui/LottieClient";
+import loadingAnimation from "../../../public/animations/Loading.json";
 
 interface PasswordModalProps {
   onClose: () => void;
@@ -12,6 +14,7 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
@@ -76,29 +79,40 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input 
-            type="password" 
-            placeholder="Nueva Contraseña" 
-            required
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="bg-background/50 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors text-white"
-          />
-          <input 
-            type="password" 
-            placeholder="Confirmar Contraseña" 
-            required
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            className="bg-background/50 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors text-white"
-          />
+          <div className="relative w-full">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              placeholder="Nueva Contraseña" 
+              required
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full bg-background/50 border border-white/10 rounded-lg px-4 py-3 pr-12 text-sm focus:outline-none focus:border-primary transition-colors text-white"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+          <div className="relative w-full">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              placeholder="Confirmar Contraseña" 
+              required
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              className="w-full bg-background/50 border border-white/10 rounded-lg px-4 py-3 pr-12 text-sm focus:outline-none focus:border-primary transition-colors text-white"
+            />
+          </div>
 
           <button 
             type="submit" 
             disabled={isLoading || !!successMsg}
             className="mt-2 w-full bg-primary hover:bg-primary/80 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(139,92,246,0.4)] flex justify-center items-center"
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Actualizar Acceso"}
+            {isLoading ? <Lottie animationData={loadingAnimation} loop={true} className="w-8 h-8" /> : "Actualizar Acceso"}
           </button>
         </form>
       </div>

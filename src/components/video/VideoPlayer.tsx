@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Loader2 } from "lucide-react";
+import Lottie from "@/components/ui/LottieClient";
+import loadingAnimation from "../../../public/animations/Loading.json";
 
 interface VideoPlayerProps {
   movieId: string;
@@ -49,7 +50,7 @@ export default function VideoPlayer({ movieId, mediaType = 'movie', season = 1, 
       {/* 1. Loader de precaución (mantiene tu UI) */}
       {isLoading && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center bg-surface/80 backdrop-blur-sm z-20">
-          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <Lottie animationData={loadingAnimation} loop={true} className="w-24 h-24" />
         </div>
       )}
 

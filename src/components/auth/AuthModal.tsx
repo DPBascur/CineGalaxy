@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useMemo, memo } from "react";
 import { supabase } from "@/lib/supabase";
-import { Loader2 } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
+import Lottie from "@/components/ui/LottieClient";
+import loadingAnimation from "../../../public/animations/Loading.json";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { motion } from "framer-motion";
 import { loadSlim } from "@tsparticles/slim";
@@ -48,6 +50,7 @@ export default function AuthModal({ onClose }: { onClose?: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [init, setInit] = useState(false);
 
@@ -121,15 +124,24 @@ export default function AuthModal({ onClose }: { onClose?: () => void }) {
 
             <div>
               <label className="block text-sm text-muted/70 tracking-wider mb-1 font-bold">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="w-full bg-white/[0.03] border border-white/10 focus:border-primary focus:shadow-[0_0_20px_rgba(139,92,246,0.3)] rounded-xl p-3.5 text-white transition-all outline-none placeholder:text-white/20"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full bg-white/[0.03] border border-white/10 focus:border-primary focus:shadow-[0_0_20px_rgba(139,92,246,0.3)] rounded-xl p-3.5 pr-12 text-white transition-all outline-none placeholder:text-white/20"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
             <motion.button
@@ -139,7 +151,7 @@ export default function AuthModal({ onClose }: { onClose?: () => void }) {
               disabled={isLoading}
               className="w-full py-3 bg-primary hover:bg-primary/80 text-white rounded-xl font-bold tracking-widest uppercase text-sm transition-all shadow-[0_0_20px_rgba(139,92,246,0.4)] flex items-center justify-center gap-2 mt-8"
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Iniciar Sesión"}
+              {isLoading ? <Lottie animationData={loadingAnimation} loop={true} className="w-8 h-8" /> : "Iniciar Sesión"}
             </motion.button>
           </form>
         </div>

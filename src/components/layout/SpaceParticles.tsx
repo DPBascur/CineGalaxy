@@ -15,6 +15,7 @@ export const SpaceParticles = memo(({ id = "tsparticles-bg" }: { id?: string }) 
     });
   }, []);
 
+  const particlesOptions = useMemo(() => {
     const isMobile = typeof window !== 'undefined' && window.matchMedia("(max-width: 768px)").matches;
 
     return {
@@ -30,7 +31,7 @@ export const SpaceParticles = memo(({ id = "tsparticles-bg" }: { id?: string }) 
         size: { value: { min: 0.5, max: 2 } },
       },
       detectRetina: true,
-    }
+    };
   }, []);
 
   if (!init) return null;

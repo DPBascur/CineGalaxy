@@ -65,7 +65,7 @@ export default function HeroBanner({ movie, onPlay }: HeroBannerProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-xs sm:text-sm md:text-lg text-foreground/80 max-w-2xl mb-4 sm:mb-8 leading-relaxed font-light drop-shadow-md line-clamp-2 sm:line-clamp-3 md:line-clamp-none"
+          className="text-xs sm:text-sm md:text-lg text-foreground/80 max-w-2xl mb-4 sm:mb-8 leading-relaxed font-light drop-shadow-md line-clamp-2 sm:line-clamp-3 md:line-clamp-4"
         >
           {movie.description}
         </motion.p>

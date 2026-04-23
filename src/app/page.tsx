@@ -14,7 +14,8 @@ import { Movie, mockMovies } from "@/lib/mockData";
 import { supabase } from "@/lib/supabase";
 import { getTrendingMovies, getTopRatedMovies, getPopularMovies, searchMovies, getPopularTV, getMediaByGenre, getAnimeShows } from "@/lib/tmdb";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import Lottie from "@/components/ui/LottieClient";
+import loadingAnimation from "../../public/animations/Loading.json";
 import clsx from "clsx";
 
 function MainContent() {
@@ -177,7 +178,7 @@ function MainContent() {
   if (isLoading && !trending.length && !searchResults.length) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <Lottie animationData={loadingAnimation} loop={true} className="w-24 h-24" />
       </div>
     );
   }
@@ -356,7 +357,7 @@ export default function Home() {
   if (session === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <Lottie animationData={loadingAnimation} loop={true} className="w-24 h-24" />
       </div>
     );
   }
@@ -375,7 +376,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background relative selection:bg-primary/30">
-      <Suspense fallback={<div className="min-h-screen flex bg-background items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>}>
+      <Suspense fallback={<div className="min-h-screen flex bg-background items-center justify-center"><Lottie animationData={loadingAnimation} loop={true} className="w-24 h-24" /></div>}>
         <MainContent />
       </Suspense>
     </main>
