@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Modal, View, TouchableOpacity, StyleSheet, Text, ActivityIndicator, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { Modal, View, TouchableOpacity, StyleSheet, Text, ActivityIndicator, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X, Play, ShieldAlert, SkipForward, Star, EyeOff } from 'lucide-react-native';
 import { supabase } from '../lib/supabase';
 import { getTVShowDetails, getTVShowEpisodes, getMediaCredits } from '../lib/tmdb';
@@ -12,6 +13,7 @@ interface PlayerModalProps {
 }
 
 export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
+  const insets = useSafeAreaInsets();
   const [seasons, setSeasons] = useState<any[]>([]);
   const [episodes, setEpisodes] = useState<any[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
@@ -111,8 +113,8 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
   if (!movie) return null;
 
   const url = movie.media_type === "tv"
-    ? `https://player.videasy.net/tv/${movie.id}/${selectedSeason}/${selectedEpisode}`
-    : `https://player.videasy.net/movie/${movie.id}`;
+    ? `https://player.videasy.net/tv/${movie.id}/${selectedSeason}/${selectedEpisode}?color=8B5CF6`
+    : `https://player.videasy.net/movie/${movie.id}?color=8B5CF6`;
 
   const renderStars = (rating: number, interactive = false) => {
       return [1,2,3,4,5].map(star => (
@@ -122,57 +124,109 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
       ));
   };
 
+  // Script de bloqueo de anuncios refinado para no romper el iframe del video
+  const adBlockScript = `
+    (function() {
+      // Bloquear apertura de nuevas ventanas (popups)
+      window.open = function() { 
+        console.log("CineGalaxy: Intento de popup bloqueado");
+        return null; 
+      };
+      
+      // Bloquear diálogos invasivos
+      window.alert = function() { return true; };
+      window.confirm = function() { return true; };
+
+      const hideAds = () => {
+        const adSelectors = [
+          'div[style*="position: fixed"]', 
+          '#pop-under',
+          '.ad-container',
+          'div[id*="ad"]',
+          'div[class*="ad-"]'
+        ];
+        adSelectors.forEach(selector => {
+          document.querySelectorAll(selector).forEach(el => {
+            // Solo ocultamos elementos que tapen mucha pantalla y no sean el video
+            const rect = el.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+               el.style.display = 'none';
+               el.style.pointerEvents = 'none';
+               el.style.opacity = '0';
+            }
+          });
+        });
+      };
+
+      setInterval(hideAds, 2000);
+      hideAds();
+    })();
+  `;
+
   return (
     <Modal visible={!!movie} animationType="slide" transparent>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title} numberOfLines={1}>{movie.title}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <X color="#fff" size={24} />
-          </TouchableOpacity>
-        </View>
+      <View className="flex-1 bg-zinc-950" style={{ paddingTop: insets.top }}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{flex: 1}}>
+          <View className="flex-row items-center justify-between p-5 pt-2.5 bg-zinc-950">
+            <Text className="text-white text-lg font-bold flex-1" numberOfLines={1}>{movie.title}</Text>
+            <TouchableOpacity onPress={onClose} className="p-1 bg-white/10 rounded-[20px] ml-4">
+              <X color="#fff" size={24} />
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.videoContainer}>
-          <WebView 
-            source={{ uri: url }} 
-            style={styles.webview}
-            allowsFullscreenVideo
-            javaScriptEnabled
-            domStorageEnabled
-            originWhitelist={['https://*', 'http://*']}
-            onShouldStartLoadWithRequest={(request) => {
-              return request.url.includes('videasy.net') || request.url.includes('google');
-            }}
-            startInLoadingState
-            renderLoading={() => (
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }]}>
-                 <ActivityIndicator size="large" color="#8B5CF6" />
-              </View>
-            )}
-          />
-        </View>
+          <View className="w-full aspect-video bg-black">
+            <WebView 
+              source={{ uri: url }} 
+              className="flex-1 bg-black"
+              allowsFullscreenVideo
+              javaScriptEnabled
+              domStorageEnabled
+              setSupportMultipleWindows={false}
+              injectedJavaScript={adBlockScript}
+              originWhitelist={['*']}
+              onShouldStartLoadWithRequest={(request) => {
+                // Permitir la carga del iframe inicial y recursos internos
+                // Bloqueamos navegaciones que intenten salirse a dominios de publicidad (ej: bet365, etc)
+                const isNavigatingAway = request.mainDocumentURL && !request.mainDocumentURL.includes('videasy.net');
+                
+                if (isNavigatingAway && !request.url.includes('videasy.net')) {
+                   // Si intenta navegar a otra web fuera del reproductor, lo bloqueamos
+                   return false;
+                }
+                
+                // Permitir el resto (imágenes, scripts de CDNs, etc) para no romper el video
+                return true;
+              }}
+              startInLoadingState
+              renderLoading={() => (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }]}>
+                   <ActivityIndicator size="large" color="#8B5CF6" />
+                </View>
+              )}
+            />
+          </View>
 
-        <ScrollView style={styles.scrollContent}>
-           <View style={styles.warningBox}>
+          <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
+           <View className="flex-row bg-[#1a1a1a] p-2.5 items-center border-b border-[#333]">
               <ShieldAlert color="#fb923c" size={20} />
-              <Text style={styles.warningText}>Protección activa anti pop-ups (Sandbox).</Text>
+              <Text className="text-white/70 text-xs ml-2.5">Protección activa anti pop-ups (Sandbox).</Text>
            </View>
 
-           <View style={styles.metadataArea}>
-              <Text style={styles.movieTitle}>{movie.title}</Text>
+           <View className="p-5">
+              <Text className="text-[28px] font-bold text-white mb-2.5">{movie.title}</Text>
               
-              <View style={styles.badgesLine}>
-                  <Text style={styles.matchText}>{movie.match}% coincidencia</Text>
-                  <Text style={styles.yearText}>{movie.year}</Text>
-                  <View style={styles.hdBadge}><Text style={styles.hdText}>HD</Text></View>
+              <View className="flex-row items-center gap-[15px] mb-5">
+                  <Text className="text-[#46d369] font-bold">{movie.match}% coincidencia</Text>
+                  <Text className="text-white/80">{movie.year}</Text>
+                  <View className="border border-white/40 rounded px-1"><Text className="text-white/90 text-[10px] font-bold">HD</Text></View>
               </View>
 
               {movie.media_type === 'tv' && seasons.length > 0 && (
-                  <View style={styles.seriesControls}>
-                      <View style={styles.pickerContainer}>
+                  <View className="mb-5 gap-2.5">
+                      <View className="bg-[#242424] rounded-lg border border-white/20 overflow-hidden">
                           <Picker
                               selectedValue={selectedSeason}
-                              style={styles.picker}
+                              style={{ color: '#fff', width: '100%', height: 50 }}
                               dropdownIconColor="#8B5CF6"
                               onValueChange={(val) => setSelectedSeason(val)}
                               mode="dropdown"
@@ -182,10 +236,10 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
                           </Picker>
                       </View>
 
-                      <View style={styles.pickerContainer}>
+                      <View className="bg-[#242424] rounded-lg border border-white/20 overflow-hidden">
                           <Picker
                               selectedValue={selectedEpisode}
-                              style={styles.picker}
+                              style={{ color: '#fff', width: '100%', height: 50 }}
                               dropdownIconColor="#8B5CF6"
                               onValueChange={(val) => setSelectedEpisode(val)}
                               mode="dropdown"
@@ -195,7 +249,7 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
                           </Picker>
                       </View>
 
-                      <TouchableOpacity style={styles.nextBtn} onPress={() => {
+                      <TouchableOpacity className="flex-row items-center justify-center bg-[#242424] border border-white/20 rounded-lg p-[15px] gap-2.5" onPress={() => {
                            const currentEpIndex = episodes.findIndex(e => e.episode_number === selectedEpisode);
                            if (currentEpIndex >= 0 && currentEpIndex < episodes.length - 1) {
                              setSelectedEpisode(episodes[currentEpIndex + 1].episode_number);
@@ -208,47 +262,48 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
                              }
                            }
                       }}>
-                          <Text style={styles.nextBtnTxt}>Siguiente</Text>
+                          <Text className="text-white font-bold">Siguiente</Text>
                           <SkipForward color="#fff" size={18} />
                       </TouchableOpacity>
                   </View>
               )}
 
-              <Text style={styles.description}>{movie.description}</Text>
+              <Text className="text-white/90 text-sm leading-[22px] mb-5">{movie.description}</Text>
 
-              <View style={styles.detailsBox}>
-                  <Text style={styles.detailTitle}>Elenco:</Text>
-                  <Text style={styles.detailText}>{cast.length > 0 ? cast.map(c => c.name).join(', ') : 'Desconocido'}</Text>
+              <View className="mt-2.5">
+                  <Text className="text-[#777] text-[13px] font-bold">Elenco:</Text>
+                  <Text className="text-white text-[13px] mt-0.5">{cast.length > 0 ? cast.map(c => c.name).join(', ') : 'Desconocido'}</Text>
                   
-                  <Text style={[styles.detailTitle, {marginTop: 10}]}>Género / Votos:</Text>
-                  <Text style={styles.detailText}>{movie.genre}  •  {movie.rating}/10</Text>
+                  <Text className="text-[#777] text-[13px] font-bold mt-2.5">Género / Votos:</Text>
+                  <Text className="text-white text-[13px] mt-0.5">{movie.genre}  •  {movie.rating}/10</Text>
               </View>
            </View>
 
            {/* Comentarios Gremio */}
-           <View style={styles.reviewsArea}>
-               <Text style={styles.sectionTitle}><Star color="#8B5CF6" fill="#8B5CF6"/> Reseñas Galácticas</Text>
+           <View className="bg-[#0f0f0f] p-5 border-t border-[#333]">
+               <Text className="text-white text-xl font-bold mb-5 flex-row items-center"><Star color="#8B5CF6" fill="#8B5CF6"/> Reseñas Galácticas</Text>
                
                {userSession ? (
-                   <View style={styles.composeBox}>
+                   <View className="bg-[#1a1a1a] p-[15px] rounded-xl mb-5 border border-white/5">
                        <Text style={{color: '#a1a1aa', fontSize: 12, marginBottom:10}}>Dejar opinión como {userSession.user.email}</Text>
-                       <View style={styles.composeHeader}>
+                       <View className="flex-row justify-between mb-[15px]">
                            <View style={{flexDirection: 'row', gap: 2}}>{renderStars(newRating, true)}</View>
-                           <TouchableOpacity onPress={() => setIsSpoiler(!isSpoiler)} style={[styles.spoilerBox, isSpoiler && styles.spoilerBoxActive]}>
+                           <TouchableOpacity onPress={() => setIsSpoiler(!isSpoiler)} className={`flex-row items-center gap-1.5 p-1 rounded bg-white/5 ${isSpoiler ? 'bg-red-500/10' : ''}`}>
                                <ShieldAlert size={14} color={isSpoiler ? "#ef4444" : "#a1a1aa"} />
-                               <Text style={[styles.spoilerTxt, isSpoiler && {color: '#ef4444'}]}>Spoiler</Text>
+                               <Text className={`text-xs font-bold ${isSpoiler ? 'text-red-500' : 'text-zinc-400'}`}>Spoiler</Text>
                            </TouchableOpacity>
                        </View>
                        <TextInput 
-                          style={styles.reviewInput}
+                          className="bg-[#242424] rounded-lg p-[15px] text-white min-h-[80px]"
+                          style={{ textAlignVertical: 'top' }}
                           placeholderTextColor="#666"
                           placeholder="¿Qué te pareció este título?"
                           value={newReview}
                           onChangeText={setNewReview}
                           multiline
                        />
-                       <TouchableOpacity onPress={submitReview} disabled={!newReview.trim()} style={[styles.submitBtn, !newReview.trim() && {opacity: 0.5}]}>
-                           <Text style={styles.submitBtnTxt}>Enviar Reseña</Text>
+                       <TouchableOpacity onPress={submitReview} disabled={!newReview.trim()} className={`bg-violet-500 p-3 rounded-lg items-center mt-2.5 ${!newReview.trim() ? 'opacity-50' : ''}`}>
+                           <Text className="text-white font-bold">Enviar Reseña</Text>
                        </TouchableOpacity>
                    </View>
                ) : (
@@ -257,24 +312,24 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
 
                {/* Historial */}
                {reviews.map((rev, i) => (
-                   <View key={i} style={styles.reviewCard}>
-                       <View style={styles.reviewHeader}>
-                           <View style={styles.avatar}><Text style={styles.avatarTxt}>{(rev.username || rev.email)?.charAt(0).toUpperCase()}</Text></View>
+                   <View key={i} className="bg-[#141414] p-[15px] rounded-xl mb-2.5 border border-white/5">
+                       <View className="flex-row items-center mb-2.5 gap-2.5">
+                           <View className="w-[35px] h-[35px] rounded-[20px] bg-violet-500 justify-center items-center"><Text className="text-white font-bold text-base">{(rev.username || rev.email)?.charAt(0).toUpperCase()}</Text></View>
                            <View style={{flex: 1}}>
-                               <Text style={styles.reviewerName}>{rev.username || rev.email?.split('@')[0]}</Text>
+                               <Text className="text-white font-bold text-sm">{rev.username || rev.email?.split('@')[0]}</Text>
                                <View style={{flexDirection:'row'}}>{renderStars(rev.rating)}</View>
                            </View>
-                           <Text style={styles.reviewDate}>{rev.created_at ? new Date(rev.created_at).toLocaleDateString() : 'ahora'}</Text>
+                           <Text className="text-white/30 text-[10px]">{rev.created_at ? new Date(rev.created_at).toLocaleDateString() : 'ahora'}</Text>
                        </View>
 
                        {rev.is_spoiler && !revealedSpoilers.includes(i) ? (
-                           <TouchableOpacity onPress={() => setRevealedSpoilers(prev => [...prev, i])} style={styles.hiddenSpoiler}>
+                           <TouchableOpacity onPress={() => setRevealedSpoilers(prev => [...prev, i])} className="bg-black/60 p-5 rounded-lg items-center border border-white/10">
                                <EyeOff color="#ef4444" size={24} style={{marginBottom: 5}}/>
                                <Text style={{color: '#ef4444', fontWeight:'bold', fontSize: 12}}>SPOILER OCULTO</Text>
                                <Text style={{color: 'rgba(255,255,255,0.4)', fontSize: 10}}>Toca para revelar</Text>
                            </TouchableOpacity>
                        ) : (
-                           <Text style={styles.reviewText}>{rev.comment}</Text>
+                           <Text className="text-white/80 text-[13px] leading-5">{rev.comment}</Text>
                        )}
                    </View>
                ))}
@@ -282,132 +337,7 @@ export default function PlayerModal({ movie, onClose }: PlayerModalProps) {
 
         </ScrollView>
       </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#09090b',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    backgroundColor: '#09090b',
-  },
-  title: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    flex: 1,
-  },
-  closeBtn: {
-    padding: 5,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 20,
-    marginLeft: 15,
-  },
-  videoContainer: {
-    width: '100%',
-    aspectRatio: 16/9,
-    backgroundColor: '#000',
-  },
-  webview: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  scrollContent: {
-    flex: 1,
-  },
-  warningBox: {
-    flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
-    padding: 10,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderColor: '#333'
-  },
-  warningText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 12,
-    marginLeft: 10
-  },
-  metadataArea: {
-    padding: 20,
-  },
-  movieTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 10
-  },
-  badgesLine: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 15,
-    marginBottom: 20
-  },
-  matchText: { color: '#46d369', fontWeight: 'bold' },
-  yearText: { color: 'rgba(255,255,255,0.8)' },
-  hdBadge: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)', borderRadius: 4, paddingHorizontal: 4 },
-  hdText: { color: 'rgba(255,255,255,0.9)', fontSize: 10, fontWeight: 'bold' },
-  seriesControls: {
-    marginBottom: 20,
-    gap: 10
-  },
-  pickerContainer: {
-    backgroundColor: '#242424',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    overflow: 'hidden'
-  },
-  picker: {
-    color: '#fff',
-    width: '100%',
-    height: 50
-  },
-  nextBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#242424',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 8,
-    padding: 15,
-    gap: 10
-  },
-  nextBtnTxt: { color: '#fff', fontWeight: 'bold' },
-  description: { color: 'rgba(255,255,255,0.9)', fontSize: 14, lineHeight: 22, marginBottom: 20 },
-  detailsBox: { marginTop: 10 },
-  detailTitle: { color: '#777', fontSize: 13, fontWeight: 'bold' },
-  detailText: { color: '#fff', fontSize: 13, marginTop: 2 },
-  reviewsArea: {
-    backgroundColor: '#0f0f0f',
-    padding: 20,
-    borderTopWidth: 1,
-    borderColor: '#333'
-  },
-  sectionTitle: { color: '#fff', fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
-  composeBox: { backgroundColor: '#1a1a1a', padding: 15, borderRadius: 12, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  composeHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
-  spoilerBox: { flexDirection: 'row', alignItems: 'center', gap: 5, padding: 5, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.05)' },
-  spoilerBoxActive: { backgroundColor: 'rgba(239, 68, 68, 0.1)' },
-  spoilerTxt: { color: '#a1a1aa', fontSize: 12, fontWeight: 'bold' },
-  reviewInput: { backgroundColor: '#242424', borderRadius: 8, padding: 15, color: '#fff', minHeight: 80, textAlignVertical: 'top' },
-  submitBtn: { backgroundColor: '#8B5CF6', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 10 },
-  submitBtnTxt: { color: '#fff', fontWeight: 'bold' },
-  reviewCard: { backgroundColor: '#141414', padding: 15, borderRadius: 12, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  reviewHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
-  avatar: { width: 35, height: 35, borderRadius: 20, backgroundColor: '#8B5CF6', justifyContent: 'center', alignItems: 'center' },
-  avatarTxt: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  reviewerName: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
-  reviewDate: { color: 'rgba(255,255,255,0.3)', fontSize: 10 },
-  reviewText: { color: 'rgba(255,255,255,0.8)', fontSize: 13, lineHeight: 20 },
-  hiddenSpoiler: { backgroundColor: 'rgba(0,0,0,0.6)', padding: 20, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }
-});

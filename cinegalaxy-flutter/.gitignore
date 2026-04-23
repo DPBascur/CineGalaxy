@@ -1,0 +1,30 @@
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins/
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Environment variables (Crucial for CineGalaxy)
+.env
+
+# Android
+android/**/generated/
+android/.gradle/
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/local.properties
+android/key.properties
+android/app/src/main/res/drawable-*/
+android/app/src/main/res/mipmap-*/
+
+# Misc
+.DS_Store
+.history
+.idea
+*.log
+*.pyc
+*.swp

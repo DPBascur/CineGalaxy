@@ -15,20 +15,23 @@ export const SpaceParticles = memo(({ id = "tsparticles-bg" }: { id?: string }) 
     });
   }, []);
 
-  const particlesOptions = useMemo(() => ({
-    fullScreen: { enable: false },
-    background: { color: { value: "transparent" } },
-    fpsLimit: 60,
-    particles: {
-      color: { value: ["#C084FC", "#8B5CF6", "#ffffff", "#38BDF8"] },
-      move: { direction: "none" as const, enable: true, outModes: { default: "out" as const }, random: true, speed: 0.2, straight: false },
-      number: { density: { enable: true, width: 800, height: 400 }, value: 100 },
-      opacity: { value: { min: 0.1, max: 0.5 }, animation: { enable: true, speed: 0.5, sync: false } },
-      shape: { type: "circle" as const },
-      size: { value: { min: 0.5, max: 2 } },
-    },
-    detectRetina: true,
-  }), []);
+    const isMobile = typeof window !== 'undefined' && window.matchMedia("(max-width: 768px)").matches;
+
+    return {
+      fullScreen: { enable: false },
+      background: { color: { value: "transparent" } },
+      fpsLimit: 60,
+      particles: {
+        color: { value: ["#C084FC", "#8B5CF6", "#ffffff", "#38BDF8"] },
+        move: { direction: "none" as const, enable: true, outModes: { default: "out" as const }, random: true, speed: 0.2, straight: false },
+        number: { density: { enable: true, width: 800, height: 400 }, value: isMobile ? 50 : 100 },
+        opacity: { value: { min: 0.1, max: 0.5 }, animation: { enable: true, speed: 0.5, sync: false } },
+        shape: { type: "circle" as const },
+        size: { value: { min: 0.5, max: 2 } },
+      },
+      detectRetina: true,
+    }
+  }, []);
 
   if (!init) return null;
   return (

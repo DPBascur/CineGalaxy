@@ -59,6 +59,7 @@ export default function RootLayout({
               };
               let devtoolsOpen = false;
               setInterval(function() {
+                if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) return;
                 const widthThreshold = window.outerWidth - window.innerWidth > 160;
                 const heightThreshold = window.outerHeight - window.innerHeight > 160;
                 if(widthThreshold || heightThreshold) {

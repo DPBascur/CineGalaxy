@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, ScrollView, Platform } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { router } from 'expo-router';
@@ -40,7 +40,7 @@ export default function AdminScreen() {
       fetchUsers();
     } else {
       Alert.alert("Acceso Denegado", "No tienes permisos de Gremio.");
-      router.replace('/home');
+      router.replace('/(tabs)');
     }
   };
 
@@ -114,54 +114,54 @@ export default function AdminScreen() {
 
   if (isAdmin === null) {
       return (
-          <View style={[styles.container, styles.center]}>
+          <View className="flex-1 bg-zinc-950 justify-center items-center">
               <ActivityIndicator size="large" color="#8B5CF6"/>
-              <Text style={{color: '#fff', marginTop:10}}>Verificando Gremio...</Text>
+              <Text className="text-white mt-2.5">Verificando Gremio...</Text>
           </View>
       )
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.replace('/home')} style={styles.backBtn}>
+    <SafeAreaView className="flex-1 bg-zinc-950" edges={['top', 'bottom']}>
+      <View className="flex-row items-center p-4 bg-[#141414] border-b border-violet-500/30">
+        <TouchableOpacity onPress={() => router.replace('/(tabs)')} className="mr-4">
           <ArrowLeft color="#fff" size={24} />
         </TouchableOpacity>
         <ShieldAlert color="#8B5CF6" size={28} />
-        <Text style={styles.headerTitle}>Gestión Maestra</Text>
+        <Text className="text-white text-[22px] font-bold ml-2.5">Gestión Maestra</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerClassName="p-4">
         
         {/* Formulario Creación */}
-        <View style={styles.panel}>
-           <Text style={styles.panelTitle}><UserPlus color="#fff" size={18} /> Nuevo Miembro</Text>
-           <TextInput style={styles.input} placeholderTextColor="#666" placeholder="Correo" value={newEmail} onChangeText={setNewEmail} keyboardType="email-address" />
-           <TextInput style={styles.input} placeholderTextColor="#666" placeholder="Alias (Username)" value={newUsername} onChangeText={setNewUsername} />
-           <TextInput style={styles.input} placeholderTextColor="#666" placeholder="Contraseña provisoria" value={newPassword} onChangeText={setNewPassword} secureTextEntry />
+        <View className="bg-[#141414] rounded-xl p-5 mb-5 border border-white/5">
+           <Text className="text-violet-500 text-lg font-bold mb-4 flex-row items-center"><UserPlus color="#fff" size={18} /> Nuevo Miembro</Text>
+           <TextInput className="bg-white/[0.03] border border-white/10 rounded-lg text-white p-3 mb-3" placeholderTextColor="#666" placeholder="Correo" value={newEmail} onChangeText={setNewEmail} keyboardType="email-address" />
+           <TextInput className="bg-white/[0.03] border border-white/10 rounded-lg text-white p-3 mb-3" placeholderTextColor="#666" placeholder="Alias (Username)" value={newUsername} onChangeText={setNewUsername} />
+           <TextInput className="bg-white/[0.03] border border-white/10 rounded-lg text-white p-3 mb-3" placeholderTextColor="#666" placeholder="Contraseña provisoria" value={newPassword} onChangeText={setNewPassword} secureTextEntry />
            
-           <TouchableOpacity onPress={handleCreateUser} disabled={isCreating} style={styles.button}>
-              {isCreating ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>CREAR CUENTA</Text>}
+           <TouchableOpacity onPress={handleCreateUser} disabled={isCreating} className="bg-violet-500 p-4 rounded-lg items-center mt-1.5">
+              {isCreating ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold tracking-widest">CREAR CUENTA</Text>}
            </TouchableOpacity>
         </View>
 
         {/* Lista */}
-        <View style={styles.panel}>
-            <Text style={styles.panelTitle}>Directorio Central</Text>
+        <View className="bg-[#141414] rounded-xl p-5 mb-5 border border-white/5">
+            <Text className="text-violet-500 text-lg font-bold mb-4 flex-row items-center">Directorio Central</Text>
             {loading ? <ActivityIndicator color="#8B5CF6" /> : (
                 users.map(u => {
                     const isMaster = u.email === ADMIN_EMAIL;
                     const username = u.user_metadata?.username || u.email.split('@')[0];
                     return (
-                        <View key={u.id} style={styles.userCard}>
-                            <View style={styles.userInfo}>
-                                <Text style={styles.userName}>{username}</Text>
-                                <Text style={styles.userEmail}>{u.email}</Text>
-                                {isMaster && <Text style={styles.masterBadge}>MÁSTER</Text>}
+                        <View key={u.id} className="flex-row justify-between items-center border-b border-white/5 py-4">
+                            <View className="flex-1">
+                                <Text className="text-white font-bold text-base">{username}</Text>
+                                <Text className="text-zinc-400 text-xs mt-0.5">{u.email}</Text>
+                                {isMaster && <Text className="text-red-500 bg-red-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold self-start mt-1.5">MÁSTER</Text>}
                             </View>
                             <TouchableOpacity 
                               disabled={isMaster} 
-                              style={[styles.delBtn, isMaster && {opacity:0.3}]}
+                              className={`p-2.5 bg-red-500/10 rounded-lg ${isMaster ? 'opacity-30' : ''}`}
                               onPress={() => handleDeleteUser(u.id, u.email)}
                             >
                                 <Trash2 color="#ef4444" size={20} />
@@ -171,114 +171,8 @@ export default function AdminScreen() {
                 })
             )}
         </View>
-        <View style={{height: 40}} />
+        <View className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#09090b',
-  },
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    backgroundColor: '#141414',
-    borderBottomWidth: 1,
-    borderColor: 'rgba(139,92,246,0.3)',
-    // Removemos padding OS iOS fijo ya que SafeAreaView lo maneja
-  },
-  backBtn: {
-    marginRight: 15,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  scroll: {
-    padding: 15,
-  },
-  panel: {
-    backgroundColor: '#141414',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  panelTitle: {
-    color: '#8B5CF6',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  input: {
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    color: '#fff',
-    padding: 12,
-    marginBottom: 12,
-  },
-  button: {
-    backgroundColor: '#8B5CF6',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-  userCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    paddingVertical: 15,
-  },
-  userInfo: {
-    flex: 1,
-  },
-  userName: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  userEmail: {
-    color: '#a1a1aa',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  masterBadge: {
-    color: '#ef4444',
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    fontSize: 10,
-    fontWeight: 'bold',
-    alignSelf: 'flex-start',
-    marginTop: 5,
-  },
-  delBtn: {
-    padding: 10,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderRadius: 8,
-  }
-});

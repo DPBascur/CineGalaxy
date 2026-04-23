@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 
@@ -12,7 +12,7 @@ export default function LoginScreen() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        router.replace('/home');
+        router.replace('/(tabs)');
       } else {
         setIsLoading(false);
       }
@@ -20,7 +20,7 @@ export default function LoginScreen() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        router.replace('/home');
+        router.replace('/(tabs)');
       }
     });
 
@@ -39,141 +39,68 @@ export default function LoginScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.center]}>
+      <View className="flex-1 bg-zinc-950 justify-center items-center">
         <ActivityIndicator size="large" color="#8B5CF6" />
-        <Text style={styles.loadingText}>Conectando a CineGalaxy...</Text>
+        <Text className="text-violet-500 mt-5 font-bold tracking-widest">Conectando a CineGalaxy...</Text>
       </View>
     );
   }
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>CineGalaxy</Text>
-        <Text style={styles.subtitle}>Portal Privado · Ingrese sus credenciales</Text>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      className="flex-1 bg-zinc-950"
+    >
+      <ScrollView 
+        contentContainerClassName="flex-grow justify-center"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="flex-1 justify-center p-8">
+          <Text 
+            className="text-4xl text-white font-bold text-center mb-1"
+            style={{ textShadowColor: 'rgba(139,92,246,0.5)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 }}
+          >
+            CineGalaxy
+          </Text>
+          <Text className="text-zinc-400 text-center font-medium mb-10">Portal Privado · Ingrese sus credenciales</Text>
 
-        {errorMsg ? (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>{errorMsg}</Text>
+          {errorMsg ? (
+            <View className="bg-red-500/10 border border-red-500/50 p-4 rounded-xl mb-5">
+              <Text className="text-red-500 text-center font-semibold">{errorMsg}</Text>
+            </View>
+          ) : null}
+
+          <View className="mb-6">
+            <Text className="text-zinc-400 text-xs font-bold mb-2 tracking-widest">CORREO ELECTRÓNICO</Text>
+            <TextInput
+              className="bg-white/5 border border-white/10 rounded-xl p-4 text-white text-base"
+              placeholderTextColor="#666"
+              placeholder="admin@cinegalaxy.com"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
           </View>
-        ) : null}
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>CORREO ELECTRÓNICO</Text>
-          <TextInput
-            style={styles.input}
-            placeholderTextColor="#666"
-            placeholder="admin@cinegalaxy.com"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
+          <View className="mb-6">
+            <Text className="text-zinc-400 text-xs font-bold mb-2 tracking-widest">CONTRASEÑA</Text>
+            <TextInput
+              className="bg-white/5 border border-white/10 rounded-xl p-4 text-white text-base"
+              placeholderTextColor="#666"
+              placeholder="••••••••"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
+
+          <TouchableOpacity onPress={handleLogin} className="bg-violet-500 p-4 rounded-xl items-center mt-2 shadow-lg shadow-violet-500/40">
+            <Text className="text-white font-bold text-base tracking-widest">INICIAR SESIÓN</Text>
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>CONTRASEÑA</Text>
-          <TextInput
-            style={styles.input}
-            placeholderTextColor="#666"
-            placeholder="••••••••"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-        </View>
-
-        <TouchableOpacity onPress={handleLogin} style={styles.button}>
-          <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#09090b',
-  },
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#8B5CF6',
-    marginTop: 20,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 30,
-  },
-  title: {
-    fontSize: 40,
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 5,
-    textShadowColor: 'rgba(139,92,246,0.5)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  subtitle: {
-    color: '#a1a1aa',
-    textAlign: 'center',
-    fontWeight: '500',
-    marginBottom: 40,
-  },
-  errorBox: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderColor: 'rgba(239, 68, 68, 0.5)',
-    borderWidth: 1,
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  errorText: {
-    color: '#ef4444',
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  inputGroup: {
-    marginBottom: 25,
-  },
-  label: {
-    color: '#a1a1aa',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  input: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 12,
-    padding: 15,
-    color: '#fff',
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: '#8B5CF6',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-    shadowColor: '#8B5CF6',
-    shadowOpacity: 0.4,
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-    letterSpacing: 2,
-  },
-});

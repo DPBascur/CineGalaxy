@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, Animated } from 'react-native';
 
 export default function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -42,36 +42,16 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-black justify-center items-center">
       <Animated.View style={{ opacity: opacityAnim, transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
-        <Text style={styles.logo}>CineGalaxy</Text>
-        <Text style={styles.subtitle}>Cargando entorno espacial...</Text>
+        <Text 
+          className="text-[50px] font-black text-violet-500"
+          style={{ textShadowColor: 'rgba(139,92,246,0.8)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 30 }}
+        >
+          CineGalaxy
+        </Text>
+        <Text className="text-zinc-400 mt-5 tracking-[3px] text-xs font-bold uppercase">Cargando entorno espacial...</Text>
       </Animated.View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logo: {
-    fontSize: 50,
-    fontWeight: '900',
-    color: '#8B5CF6',
-    textShadowColor: 'rgba(139,92,246,0.8)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 30,
-  },
-  subtitle: {
-    color: '#a1a1aa',
-    marginTop: 20,
-    letterSpacing: 3,
-    fontSize: 12,
-    fontWeight: 'bold',
-    textTransform: 'uppercase'
-  }
-});
